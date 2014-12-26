@@ -6,9 +6,9 @@ angular.module('myApp.controllers', [])
 	.controller('LandingPageController', [function() {
 
 	}])
-	.controller('WaitlistController', ['$scope', '$firebase', function($scope, $firebase) {
+	.controller('WaitlistController', ['$scope', '$firebase', 'FIREBASE_URL',  function($scope, $firebase, FIREBASE_URL) {
 		//connecting scope.parties to live firebase data
-		var partiesRef = new Firebase('https://waitandeat-sohaib.firebaseio.com/parties');
+		var partiesRef = new Firebase(FIREBASE_URL + 'parties');
 		$scope.parties = $firebase(partiesRef);
 		//Object to store data from waitlist form
 		$scope.newParty = {name: '', phone: '', size: '', done: false, notified: 'No'};
@@ -21,7 +21,7 @@ angular.module('myApp.controllers', [])
 
 		//Function to send text message to a party. 
 		$scope.sendTextMessage = function(party) {
-			var textMessageRef = new Firebase('https://waitandeat-sohaib.firebaseio.com/textMessages');
+			var textMessageRef = new Firebase(FIREBASE_URL + 'textMessages');
 			var textMessages = $firebase(textMessageRef);
 			var newTextMessage = {
 				phoneNumber: party.phone,
@@ -35,8 +35,8 @@ angular.module('myApp.controllers', [])
 		};
 	}])
 
-	.controller('AuthController', ['$scope', '$firebaseSimpleLogin','$location', function($scope, $firebaseSimpleLogin, $location) {
-		var authRef = new Firebase('https://waitandeat-sohaib.firebaseio.com');
+	.controller('AuthController', ['$scope', '$firebaseSimpleLogin','$location','FIREBASE_URL', function($scope, $firebaseSimpleLogin, $location, FIREBASE_URL) {
+		var authRef = new Firebase(FIREBASE_URL);
 
 		var auth = $firebaseSimpleLogin(authRef);
 
@@ -45,17 +45,21 @@ angular.module('myApp.controllers', [])
 		$scope.register = function () {
 			auth.$createUser($scope.user.email, $scope.user.password).then(function(data) {
 				console.log(data);
-				$auth.$login('password', $scope.user);
+				$scope.login();
 			});
 		};
 
 		$scope.login = function () {
 			auth.$login('password', $scope.user).then(function(data){
 				console.log(data);
+				//redirect to waitlist page
+				$location.path('/waitlist');
 			});
 		};
 
 		$scope.logout = function() {
 			auth.$logout();
+			//redirect users to landing page
+			$location.path('/');
 		};
 	}]);
